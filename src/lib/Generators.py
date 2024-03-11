@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 import logging
+import phonenumbers
 
 STUDENT_DOMAIN = '@student.gssb.org'
 TEACHER_DOMAIN = '@gssb.org'
@@ -197,8 +198,78 @@ def createRole(sycamore_relationship: str):
     if sycamore_relationship == 'Uncle':
         return 'Relative'
 
-    print('Unknown relationship "%s"' % (sycamore_relationship))
+    print('Unsupported relationship "%s"' % (sycamore_relationship))
     return 'Parent'
+
+def createUserRole(sycamore_employee_position: str, sycamore_employee_id: str):
+    if not isinstance(sycamore_employee_position, str):
+        # Default value
+        return 'teacher'
+
+    sycamore_employee_position = sycamore_employee_position.strip()
+
+    if sycamore_employee_position == 'Teacher':
+        return 'teacher'
+    if sycamore_employee_position == 'Substitute':
+        return 'substitute'
+
+    print('Unsupported employee position "%s" for employeee "%s"' %
+        (sycamore_employee_position, sycamore_employee_id))
+    return 'other'
+
+def createRelationshipRole(sycamore_relationship: str, sycamore_contact_id: str):
+    if not isinstance(sycamore_relationship, str):
+        # Default value
+        return 'parent'
+
+    sycamore_relationship = sycamore_relationship.strip()
+
+    if sycamore_relationship == 'Mother':
+        return 'parent'
+    if sycamore_relationship == 'Father':
+        return 'parent'
+    if sycamore_relationship == 'Stepmother':
+        return 'parent'
+    if sycamore_relationship == 'Stepfather':
+        return 'parent'
+    if sycamore_relationship == 'Parents':
+        return 'parent'
+    if sycamore_relationship == 'Grandmother':
+        return 'relative'
+    if sycamore_relationship == '':
+        return 'parent'
+    if sycamore_relationship == 'Aunt':
+        return 'relative'
+    if sycamore_relationship == 'Close Friend':
+        return 'other'
+    if sycamore_relationship == 'Colleague':
+        return 'other'
+    if sycamore_relationship == 'Grandfather':
+        return 'relative'
+    if sycamore_relationship == 'Grandparents':
+        return 'relative'
+    if sycamore_relationship == 'Nanny':
+        return 'aide'
+    if sycamore_relationship == 'Not Defined':
+        return 'other'
+    if sycamore_relationship == 'Relative':
+        return 'relative'
+    if sycamore_relationship == 'Sibling':
+        return 'relative'
+    if sycamore_relationship == 'Uncle':
+        return 'relative'
+    if sycamore_relationship == 'Partner':
+        return 'guardian'
+    if sycamore_relationship == 'DayCare Provider':
+        return 'aide'
+    if sycamore_relationship == 'Helper':
+        return 'aide'
+    if sycamore_relationship == 'Student':
+        return 'other'
+
+    print('Unknown relationship "%s" for contact "%s"' %
+        (sycamore_relationship, sycamore_contact_id))
+    return 'other'
 
 def createPhoneNumber(phone: str) -> str:
     return (
@@ -207,3 +278,15 @@ def createPhoneNumber(phone: str) -> str:
           .replace(")","")
           .replace(" ","")
           .strip())
+
+def createE164PhoneNumber(phone: str, sycamore_contact_id: str) -> str:
+    try:
+        parsed_phone = phonenumbers.parse(phone, region="US")
+    except phonenumbers.phonenumberutil.NumberParseException:
+        parsed_phone = None
+
+    if not parsed_phone or not phonenumbers.is_valid_number(parsed_phone):
+        print('Invalid phone number format "%s" for contact "%s"' % (phone, sycamore_contact_id))
+        return None
+
+    return phonenumbers.format_number(parsed_phone, num_format=phonenumbers.PhoneNumberFormat.E164)
